@@ -16,7 +16,6 @@ enum Metrics {
     static let episodeNumberWidth: CGFloat = 70
     static let episodePadding: CGFloat = 24
     static let episodeProgressWidth: CGFloat = 300
-    static let subtitleSize: CGFloat = 46
     #else
     static let poster = CGSize(width: 150, height: 225)
     static let gridColumns = [GridItem(.adaptive(minimum: 150), spacing: 20)]
@@ -30,7 +29,6 @@ enum Metrics {
     static let episodeNumberWidth: CGFloat = 36
     static let episodePadding: CGFloat = 14
     static let episodeProgressWidth: CGFloat = 180
-    static let subtitleSize: CGFloat = 26
     #endif
 }
 

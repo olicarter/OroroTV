@@ -1,8 +1,16 @@
+import AVFoundation
 import SwiftUI
 
 @main
 struct OroroTVApp: App {
     @StateObject private var model = AppModel()
+
+    #if !os(tvOS)
+    init() {
+        // Play sound even with the silent switch on, and keep going in Picture in Picture.
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
+    }
+    #endif
 
     var body: some Scene {
         WindowGroup {
@@ -114,9 +122,13 @@ struct RootView: View {
                 #endif
             }
             .onOpenURL { url in Task { await router.open(url, model: model) } }
+            #if os(tvOS)
             .fullScreenCover(item: $router.current) { request in
                 PlayerScreen(request: request, model: model).environmentObject(model)
             }
+            #else
+            .background { NativePlayerPresenter(request: $router.current, model: model) }
+            #endif
     }
 
     #if os(tvOS)

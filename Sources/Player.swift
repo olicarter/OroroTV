@@ -1,4 +1,5 @@
 import AVKit
+import Combine
 import SwiftUI
 
 // MARK: - WebVTT
@@ -49,14 +50,13 @@ final class PlayerController: NSObject, ObservableObject {
     @Published var error: String?
     @Published var subtitles: [Subtitle] = []
     @Published var selectedLanguage: String?
-    #if !os(tvOS)
-    /// Whether our close/subtitles bar is showing; kept roughly in step with AVKit's own controls.
-    @Published var chromeVisible = true
-    private var hideChrome: Task<Void, Never>?
-    private var statusObservation: NSKeyValueObservation?
-    #endif
 
     private var cues: [Cue] = []
+    #if !os(tvOS)
+    /// Serves the stream with ororo's subtitles added; must outlive the player item.
+    private var stream: SubtitledStream?
+    private var selectionObserver: NSObjectProtocol?
+    #endif
     private var timeObserver: Any?
     private var lastSaved: Double = 0
     private let request: PlaybackRequest
@@ -70,32 +70,36 @@ final class PlayerController: NSObject, ObservableObject {
 
     func start() async {
         guard let api = model?.api else { return }
-        #if !os(tvOS)
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
-        statusObservation = player.observe(\.timeControlStatus) { [weak self] player, _ in
-            let playing = player.timeControlStatus == .playing
-            Task { @MainActor in
-                if playing { self?.scheduleHideChrome() } else { self?.showChrome(autoHide: false) }
-            }
-        }
-        #endif
         do {
             let playable = try await api.playable(for: request)
             guard let url = URL(string: playable.url) else { throw APIError.http(0) }
+            subtitles = (playable.subtitles ?? []).sorted { $0.lang < $1.lang }
+            #if os(tvOS)
             let item = AVPlayerItem(url: url)
+            #else
+            let stream = SubtitledStream(url: url, subtitles: subtitles)
+            self.stream = stream
+            let item = AVPlayerItem(asset: stream.asset)
+            #endif
             item.externalMetadata = metadata(playable)
             player.replaceCurrentItem(with: item)
             if let resume = model?.savedPosition(for: request.progressKey) {
                 await player.seek(to: CMTime(seconds: resume, preferredTimescale: 600))
             }
             observeTime()
+            #if !os(tvOS)
+            try? AVAudioSession.sharedInstance().setActive(true)
+            #endif
             player.play()
 
-            subtitles = (playable.subtitles ?? []).sorted { $0.lang < $1.lang }
             let preferred = model?.subtitleLanguage ?? "en"
+            #if os(tvOS)
             if preferred != "off", let sub = subtitles.first(where: { $0.lang == preferred }) {
                 await selectSubtitle(sub)
             }
+            #else
+            await selectNativeSubtitle(preferred, in: item)
+            #endif
         } catch {
             self.error = error.localizedDescription
         }
@@ -116,27 +120,19 @@ final class PlayerController: NSObject, ObservableObject {
     }
 
     #if !os(tvOS)
-    func toggleChrome() {
-        if chromeVisible {
-            hideChrome?.cancel()
-            withAnimation { chromeVisible = false }
-        } else {
-            showChrome(autoHide: true)
-        }
-    }
-
-    func showChrome(autoHide: Bool) {
-        withAnimation { chromeVisible = true }
-        if autoHide { scheduleHideChrome() } else { hideChrome?.cancel() }
-    }
-
-    /// AVKit fades its controls a few seconds into playback; follow suit.
-    private func scheduleHideChrome() {
-        hideChrome?.cancel()
-        hideChrome = Task {
-            try? await Task.sleep(for: .seconds(3))
-            guard !Task.isCancelled, player.timeControlStatus == .playing else { return }
-            withAnimation { chromeVisible = false }
+    /// Picks the saved language in AVKit's subtitles menu, then remembers whatever the viewer
+    /// chooses there as the new default.
+    private func selectNativeSubtitle(_ language: String, in item: AVPlayerItem) async {
+        guard let group = try? await item.asset.loadMediaSelectionGroup(for: .legible) else { return }
+        let option = group.options.first { $0.extendedLanguageTag == language }
+        item.select(language == "off" ? nil : option, in: group)
+        selectionObserver = NotificationCenter.default.addObserver(
+            forName: AVPlayerItem.mediaSelectionDidChangeNotification, object: item, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                let chosen = item.currentMediaSelection.selectedMediaOption(in: group)
+                self?.model?.subtitleLanguage = chosen?.extendedLanguageTag ?? "off"
+            }
         }
     }
     #endif
@@ -144,8 +140,9 @@ final class PlayerController: NSObject, ObservableObject {
     func stop() {
         saveProgress()
         #if !os(tvOS)
-        statusObservation = nil
-        hideChrome?.cancel()
+        if let selectionObserver { NotificationCenter.default.removeObserver(selectionObserver) }
+        selectionObserver = nil
+        stream = nil
         #endif
         if let timeObserver { player.removeTimeObserver(timeObserver) }
         timeObserver = nil
@@ -188,9 +185,9 @@ final class PlayerController: NSObject, ObservableObject {
     }
 }
 
-/// AVPlayerViewController (native transport bar, scrubbing, Siri remote gestures on tvOS;
-/// Picture in Picture on iPad) with an overlay for the external WebVTT subtitles Ororo
-/// serves alongside its HLS streams.
+#if os(tvOS)
+/// AVPlayerViewController (native transport bar, scrubbing, Siri remote gestures)
+/// with an overlay for the external WebVTT subtitles Ororo serves alongside its HLS streams.
 struct PlayerViewControllerRepresentable: UIViewControllerRepresentable {
     @ObservedObject var controller: PlayerController
     let languageName: (String) -> String
@@ -198,14 +195,6 @@ struct PlayerViewControllerRepresentable: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let vc = AVPlayerViewController()
         vc.player = controller.player
-        #if !os(tvOS)
-        vc.canStartPictureInPictureAutomaticallyFromInline = true
-        // AVKit toggles its controls on a tap; watch the same taps to toggle our bar with them.
-        let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.tapped))
-        tap.cancelsTouchesInView = false
-        tap.delegate = context.coordinator
-        vc.view.addGestureRecognizer(tap)
-        #endif
         let host = UIHostingController(rootView: SubtitleOverlay(controller: controller))
         host.view.backgroundColor = .clear
         host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -224,7 +213,6 @@ struct PlayerViewControllerRepresentable: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ vc: AVPlayerViewController, context: Context) {
-        #if os(tvOS)
         // Subtitle picker lives in the transport bar's info panel.
         let current = controller.selectedLanguage
         var actions = [UIAction(title: "Off", state: current == nil ? .on : .off) { _ in
@@ -238,27 +226,7 @@ struct PlayerViewControllerRepresentable: UIViewControllerRepresentable {
         vc.transportBarCustomMenuItems = controller.subtitles.isEmpty ? [] : [
             UIMenu(title: "Subtitles", image: UIImage(systemName: "captions.bubble"), options: .singleSelection, children: actions)
         ]
-        #endif
     }
-
-    #if !os(tvOS)
-    func makeCoordinator() -> Coordinator { Coordinator(controller: controller) }
-
-    @MainActor
-    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
-        let controller: PlayerController
-        init(controller: PlayerController) { self.controller = controller }
-
-        @objc func tapped() { controller.toggleChrome() }
-
-        func gestureRecognizer(_ g: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
-
-        /// Taps on AVKit's own buttons and scrubber don't toggle its controls, so ignore them too.
-        func gestureRecognizer(_ g: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-            sequence(first: touch.view, next: { $0?.superview }).allSatisfy { !($0 is UIControl) }
-        }
-    }
-    #endif
 }
 
 struct SubtitleOverlay: View {
@@ -269,15 +237,15 @@ struct SubtitleOverlay: View {
             Spacer()
             if let cue = controller.currentCue {
                 Text(cue)
-                    .font(.system(size: Metrics.subtitleSize, weight: .semibold))
+                    .font(.system(size: 46, weight: .semibold))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.white)
                     .shadow(color: .black, radius: 3)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 8)
                     .background(.black.opacity(0.45), in: RoundedRectangle(cornerRadius: 8))
-                    .padding(.bottom, Metrics.subtitleSize * 1.5)
-                    .padding(.horizontal, Metrics.margin * 2)
+                    .padding(.bottom, 70)
+                    .padding(.horizontal, 120)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -287,7 +255,6 @@ struct SubtitleOverlay: View {
 
 struct PlayerScreen: View {
     @EnvironmentObject var model: AppModel
-    @Environment(\.dismiss) private var dismiss
     @StateObject private var controller: PlayerController
 
     init(request: PlaybackRequest, model: AppModel) {
@@ -307,50 +274,97 @@ struct PlayerScreen: View {
                 }
             }
         }
-        #if !os(tvOS)
-        // tvOS dismisses with the remote's Menu button and puts subtitles in the transport bar;
-        // iPad needs both on screen.
-        .overlay(alignment: .top) {
-            // Faded rather than removed, so an open subtitles menu survives the auto-hide.
-            let visible = controller.chromeVisible || controller.error != nil
-            HStack {
-                Button { dismiss() } label: { Image(systemName: "xmark") }
-                    .accessibilityLabel("Close")
-                Spacer()
-                if !controller.subtitles.isEmpty { subtitlesMenu }
-            }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
-            .controlSize(.large)
-            .tint(.white)
-            .padding(.horizontal, Metrics.margin)
-            .padding(.top, 72)
-            .opacity(visible ? 1 : 0)
-            .allowsHitTesting(visible)
-        }
-        .statusBarHidden(!controller.chromeVisible)
-        .persistentSystemOverlays(.hidden)
-        #endif
         .task { await controller.start() }
         .onDisappear { controller.stop() }
     }
 }
 
-#if !os(tvOS)
-extension PlayerScreen {
-    private var subtitlesMenu: some View {
-        Menu {
-            Picker("Subtitles", selection: Binding(
-                get: { controller.selectedLanguage },
-                set: { lang in Task { await controller.selectSubtitle(controller.subtitles.first { $0.lang == lang }) } }
-            )) {
-                Text("Off").tag(String?.none)
-                ForEach(controller.subtitles, id: \.lang) { Text(Languages.name($0.lang)).tag(String?.some($0.lang)) }
+#else
+/// iPad: AVKit's own full-screen player, presented modally, so the close button, swipe to
+/// dismiss, subtitles menu and Picture in Picture are all the system's.
+struct NativePlayerPresenter: UIViewControllerRepresentable {
+    @Binding var request: PlaybackRequest?
+    let model: AppModel
+
+    func makeUIViewController(context: Context) -> UIViewController { UIViewController() }
+
+    func updateUIViewController(_ host: UIViewController, context: Context) {
+        context.coordinator.dismissRequest = { request = nil }
+        context.coordinator.show(request, model: model, from: host)
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    @MainActor
+    final class Coordinator: NSObject, AVPlayerViewControllerDelegate {
+        var dismissRequest: () -> Void = {}
+        private var current: (request: PlaybackRequest, controller: PlayerController, view: AVPlayerViewController)?
+        private weak var host: UIViewController?
+        private var inPictureInPicture = false
+        private var errorWatch: AnyCancellable?
+
+        func show(_ request: PlaybackRequest?, model: AppModel, from host: UIViewController) {
+            self.host = host
+            guard request != current?.request else { return }
+            if let current {
+                current.view.presentingViewController?.dismiss(animated: true)
+                finish(clearRequest: false)
             }
-        } label: {
-            Image(systemName: controller.selectedLanguage == nil ? "captions.bubble" : "captions.bubble.fill")
+            guard let request else { return }
+            let controller = PlayerController(request: request, model: model)
+            let vc = AVPlayerViewController()
+            vc.player = controller.player
+            vc.delegate = self
+            vc.modalPresentationStyle = .fullScreen
+            vc.canStartPictureInPictureAutomaticallyFromInline = true
+            current = (request, controller, vc)
+            errorWatch = controller.$error.compactMap { $0 }.sink { [weak self] message in
+                self?.showError(message)
+            }
+            host.present(vc, animated: true)
+            Task { await controller.start() }
         }
-        .accessibilityLabel("Subtitles")
+
+        private func finish(clearRequest: Bool = true) {
+            current?.controller.stop()
+            current = nil
+            errorWatch = nil
+            inPictureInPicture = false
+            if clearRequest { dismissRequest() }
+        }
+
+        private func showError(_ message: String) {
+            guard let vc = current?.view else { return }
+            let alert = UIAlertController(title: "Couldn't play this video", message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                vc.dismiss(animated: true)
+                self.finish()
+            })
+            vc.present(alert, animated: true)
+        }
+
+        // Close button or swipe down. Not the end of playback while it continues in Picture in Picture.
+        func playerViewController(_ vc: AVPlayerViewController,
+                                  willEndFullScreenPresentationWithAnimationCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+            coordinator.animate(alongsideTransition: nil) { context in
+                guard !context.isCancelled, !self.inPictureInPicture else { return }
+                self.finish()
+            }
+        }
+
+        func playerViewControllerWillStartPictureInPicture(_ vc: AVPlayerViewController) { inPictureInPicture = true }
+
+        func playerViewControllerDidStopPictureInPicture(_ vc: AVPlayerViewController) {
+            inPictureInPicture = false
+            // Closed from the PiP window rather than expanded back into the app.
+            if vc.presentingViewController == nil { finish() }
+        }
+
+        func playerViewController(_ vc: AVPlayerViewController,
+                                  restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completion: @escaping (Bool) -> Void) {
+            guard let host, vc.presentingViewController == nil else { return completion(true) }
+            host.present(vc, animated: true) { completion(true) }
+        }
     }
 }
 #endif

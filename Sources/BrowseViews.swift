@@ -69,13 +69,16 @@ struct Shelf: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(title).font(.title3).bold()
+            Text(title).font(.title3).bold().padding(.horizontal, Metrics.margin)
             ScrollView(.horizontal) {
                 LazyHStack(spacing: Metrics.shelfSpacing) {
                     ForEach(items) { PosterCard(item: $0) }
                 }
                 .padding(.vertical, Metrics.shelfInset)
             }
+            // Full-width scroll view with the inset inside it, so posters scroll off the
+            // screen edge rather than vanishing at the page margin.
+            .contentMargins(.horizontal, Metrics.margin, for: .scrollContent)
             .scrollClipDisabled()
         }
     }
@@ -113,7 +116,6 @@ struct HomeView: View {
                     Shelf(title: "Top rated shows", items: Array(model.shows.sorted { ($0.imdbRating ?? 0) > ($1.imdbRating ?? 0) }.prefix(30)))
                     Shelf(title: "Top rated movies", items: Array(model.movies.sorted { ($0.imdbRating ?? 0) > ($1.imdbRating ?? 0) }.prefix(30)))
                 }
-                .padding(.horizontal, Metrics.margin)
             }
         }
     }
@@ -134,7 +136,7 @@ struct ContinueWatchingShelf: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Continue watching").font(.title3).bold()
+            Text("Continue watching").font(.title3).bold().padding(.horizontal, Metrics.margin)
             ScrollView(.horizontal) {
                 LazyHStack(spacing: Metrics.shelfSpacing) {
                     ForEach(model.continueWatching, id: \.request) { entry in
@@ -162,6 +164,9 @@ struct ContinueWatchingShelf: View {
                 }
                 .padding(.vertical, Metrics.shelfInset)
             }
+            // Full-width scroll view with the inset inside it, so posters scroll off the
+            // screen edge rather than vanishing at the page margin.
+            .contentMargins(.horizontal, Metrics.margin, for: .scrollContent)
             .scrollClipDisabled()
         }
     }

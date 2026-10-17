@@ -7,7 +7,7 @@ Both apps share one codebase (`Sources/`). Where the platforms differ, the iPad 
 - Browse shows and movies (popular, new episodes, top rated), with sorting and a genre filter
 - Search the whole catalog (native tvOS keyboard; the system search tab on iPad)
 - Show pages with seasons and episodes, plus "continue watching" and resume
-- AVKit player with ororo's external WebVTT subtitles drawn over the video, and a Subtitles menu (in the transport bar on tvOS; in a bar that shows with the playback controls on iPad, since iOS has no API for custom transport-bar menus)
+- AVKit player with ororo's external WebVTT subtitles. On tvOS they're drawn over the video with a Subtitles menu in the transport bar. On iPad the app adds them to the HLS stream as real subtitle renditions (`Sources/SubtitledStream.swift`), so AVKit's own full-screen player lists them in its subtitles menu and draws them, Picture in Picture included
 
 It uses ororo.tv's JSON API (`https://ororo.tv/api/v2/`) with HTTP Basic auth (your ororo email and password, stored in the Keychain). Streams are signed HLS URLs played directly by AVPlayer.
 
