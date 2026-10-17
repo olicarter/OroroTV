@@ -1,11 +1,13 @@
 # OroroTV
 
-A native tvOS client for [ororo.tv](https://ororo.tv), built with SwiftUI.
+A native tvOS and iPadOS client for [ororo.tv](https://ororo.tv), built with SwiftUI.
+
+Both apps share one codebase (`Sources/`). Where the platforms differ, the iPad uses its own native components: a tab bar that can become a sidebar, toolbar menus for sorting and genres, pop-up/segmented season pickers, pointer hover effects, and Picture in Picture. Sizes for each platform live in `Sources/Platform.swift`.
 
 - Browse shows and movies (popular, new episodes, top rated), with sorting and a genre filter
-- Search the whole catalog with the native tvOS keyboard
+- Search the whole catalog (native tvOS keyboard; the system search tab on iPad)
 - Show pages with seasons and episodes, plus "continue watching" and resume
-- AVKit player with ororo's external WebVTT subtitles drawn over the video, and a Subtitles menu in the transport bar
+- AVKit player with ororo's external WebVTT subtitles drawn over the video, and a Subtitles menu (in the transport bar on tvOS; in a bar that shows with the playback controls on iPad, since iOS has no API for custom transport-bar menus)
 
 It uses ororo.tv's JSON API (`https://ororo.tv/api/v2/`) with HTTP Basic auth (your ororo email and password, stored in the Keychain). Streams are signed HLS URLs played directly by AVPlayer.
 
@@ -17,6 +19,8 @@ The Xcode project is generated from `project.yml` with [XcodeGen](https://github
 xcodegen generate
 open OroroTV.xcodeproj
 ```
+
+Schemes: `OroroTV` (Apple TV, tvOS 17+) and `OroroPad` (iPad, iPadOS 18+). They share the bundle ID `dev.olicarter.ororotv`, so the commands below work for either simulator.
 
 Set your signing team in `project.yml` (`DEVELOPMENT_TEAM`) before regenerating, or Xcode will lose it.
 
@@ -34,11 +38,11 @@ read "E?ororo email: " && read -s "P?ororo password: " && echo && \
   xcrun simctl launch --terminate-running-process booted dev.olicarter.ororotv; unset E P
 ```
 
-Open a deep link at launch without tvOS's "Open in…?" prompt: `SIMCTL_CHILD_OROROTV_OPEN_URL="ororotv://show/2760" xcrun simctl launch booted dev.olicarter.ororotv`
+Open a deep link at launch without the "Open in…?" prompt: `SIMCTL_CHILD_OROROTV_OPEN_URL="ororotv://show/2760" xcrun simctl launch booted dev.olicarter.ororotv`
 
 ## App icon
 
-Icon layers and top shelf images are rendered from `tools/ororo-logo.svg`:
+The tvOS icon layers and top shelf images, and the iPad icon, are rendered from `tools/ororo-logo.svg`:
 
 ```sh
 swift tools/render_icons.swift tools/ororo-logo.svg Resources/Assets.xcassets

@@ -6,17 +6,32 @@ struct LoginView: View {
     @State private var password = ""
     @State private var error: String?
     @State private var busy = false
+    @FocusState private var passwordFocused: Bool
+
+    #if os(tvOS)
+    private let layout = AnyLayout(HStackLayout(spacing: 120))
+    private let logoSize: CGFloat = 120
+    private let alignment = HorizontalAlignment.leading
+    private let formWidth: CGFloat = 700
+    #else
+    /// Stacked so it fits in portrait and alongside the keyboard.
+    private let layout = AnyLayout(VStackLayout(spacing: 48))
+    private let logoSize: CGFloat = 80
+    private let alignment = HorizontalAlignment.center
+    private let formWidth: CGFloat = 420
+    #endif
 
     var body: some View {
-        HStack(spacing: 120) {
-            VStack(alignment: .leading, spacing: 24) {
+        layout {
+            VStack(alignment: alignment, spacing: 24) {
                 Text("ororo")
-                    .font(.system(size: 120, weight: .heavy, design: .rounded))
+                    .font(.system(size: logoSize, weight: .heavy, design: .rounded))
                     .foregroundStyle(LinearGradient(colors: [.orange, .pink], startPoint: .leading, endPoint: .trailing))
                 Text("TV shows and movies in their original language, with subtitles.")
                     .font(.title3)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: 600, alignment: .leading)
+                    .multilineTextAlignment(alignment == .center ? .center : .leading)
+                    .frame(maxWidth: 600, alignment: Alignment(horizontal: alignment, vertical: .center))
             }
 
             VStack(spacing: 30) {
@@ -25,8 +40,13 @@ struct LoginView: View {
                     .keyboardType(.emailAddress)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
+                    .submitLabel(.next)
+                    .onSubmit { passwordFocused = true }
                 SecureField("Password", text: $password)
                     .textContentType(.password)
+                    .focused($passwordFocused)
+                    .submitLabel(.go)
+                    .onSubmit { Task { await submit() } }
                 Button {
                     Task { await submit() }
                 } label: {
@@ -36,6 +56,7 @@ struct LoginView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
+                .primaryButtonStyle()
                 .disabled(busy || email.isEmpty || password.isEmpty)
 
                 if let error {
@@ -45,9 +66,12 @@ struct LoginView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            .frame(width: 700)
+            #if !os(tvOS)
+            .textFieldStyle(.roundedBorder)
+            #endif
+            .frame(width: formWidth)
         }
-        .padding(80)
+        .padding(Metrics.detailMargin)
         .task {
             #if DEBUG
             // Lets you sign in on the simulator from a terminal instead of the on-screen keyboard:
@@ -63,6 +87,7 @@ struct LoginView: View {
     }
 
     private func submit() async {
+        guard !busy, !email.isEmpty, !password.isEmpty else { return }
         busy = true
         error = nil
         defer { busy = false }

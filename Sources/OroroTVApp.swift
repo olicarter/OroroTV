@@ -102,6 +102,25 @@ struct RootView: View {
     @StateObject private var router = PlaybackRouter()
 
     var body: some View {
+        tabs
+            .environmentObject(router)
+            .task {
+                await model.loadCatalog()
+                #if DEBUG
+                // Open a deep link at launch without tvOS's "Open in…?" prompt (simulator testing).
+                if let raw = ProcessInfo.processInfo.environment["OROROTV_OPEN_URL"], let url = URL(string: raw) {
+                    await router.open(url, model: model)
+                }
+                #endif
+            }
+            .onOpenURL { url in Task { await router.open(url, model: model) } }
+            .fullScreenCover(item: $router.current) { request in
+                PlayerScreen(request: request, model: model).environmentObject(model)
+            }
+    }
+
+    #if os(tvOS)
+    private var tabs: some View {
         TabView(selection: $router.tab) {
             tab(.home) { HomeView() }.tabItem { Label("Home", systemImage: "house") }.tag(AppTab.home)
             tab(.shows) { CatalogView(kind: .show) }.tabItem { Label("Shows", systemImage: "tv") }.tag(AppTab.shows)
@@ -109,25 +128,28 @@ struct RootView: View {
             tab(.search) { SearchView() }.tabItem { Label("Search", systemImage: "magnifyingglass") }.tag(AppTab.search)
             tab(.settings) { SettingsView() }.tabItem { Label("Settings", systemImage: "gearshape") }.tag(AppTab.settings)
         }
-        .environmentObject(router)
-        .task {
-            await model.loadCatalog()
-            #if DEBUG
-            // Open a deep link at launch without tvOS's "Open in…?" prompt (simulator testing).
-            if let raw = ProcessInfo.processInfo.environment["OROROTV_OPEN_URL"], let url = URL(string: raw) {
-                await router.open(url, model: model)
-            }
-            #endif
-        }
-        .onOpenURL { url in Task { await router.open(url, model: model) } }
-        .fullScreenCover(item: $router.current) { request in
-            PlayerScreen(request: request, model: model).environmentObject(model)
-        }
     }
+    #else
+    /// iPadOS tab bar that the user can turn into a sidebar, with Search as the system search tab.
+    private var tabs: some View {
+        TabView(selection: $router.tab) {
+            Tab("Home", systemImage: "house", value: AppTab.home) { tab(.home, "Home") { HomeView() } }
+            Tab("Shows", systemImage: "tv", value: AppTab.shows) { tab(.shows, "Shows") { CatalogView(kind: .show) } }
+            Tab("Movies", systemImage: "film", value: AppTab.movies) { tab(.movies, "Movies") { CatalogView(kind: .movie) } }
+            Tab("Settings", systemImage: "gearshape", value: AppTab.settings) { tab(.settings, "Settings") { SettingsView() } }
+            Tab(value: AppTab.search, role: .search) { tab(.search, "Search") { SearchView() } }
+        }
+        .tabViewStyle(.sidebarAdaptable)
+        .tint(.orange)
+    }
+    #endif
 
-    private func tab<Content: View>(_ tab: AppTab, @ViewBuilder _ content: () -> Content) -> some View {
+    private func tab<Content: View>(_ tab: AppTab, _ title: String = "", @ViewBuilder _ content: () -> Content) -> some View {
         NavigationStack(path: router.path(tab)) {
             content()
+                #if !os(tvOS)
+                .navigationTitle(title)
+                #endif
                 .navigationDestination(for: CatalogItem.self) { item in
                     switch item.kind {
                     case .show: ShowDetailView(item: item)

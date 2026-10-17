@@ -46,7 +46,7 @@ struct MovieDetailView: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             Backdrop(url: item.backdropURL ?? item.posterURL)
-            HStack(alignment: .bottom, spacing: 60) {
+            HStack(alignment: .bottom, spacing: Metrics.detailSpacing) {
                 PosterImage(url: item.posterURL, title: item.name)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 VStack(alignment: .leading, spacing: 24) {
@@ -59,8 +59,9 @@ struct MovieDetailView: View {
                     PlayButtons(request: request)
                 }
             }
-            .padding(80)
+            .padding(Metrics.detailMargin)
         }
+        .detailToolbar()
     }
 }
 
@@ -70,19 +71,22 @@ struct PlayButtons: View {
     @EnvironmentObject var router: PlaybackRouter
 
     var body: some View {
-        HStack(spacing: 30) {
+        HStack(spacing: Metrics.buttonSpacing) {
             if let pos = model.savedPosition(for: request.progressKey) {
                 Button { router.play(request) } label: {
                     Label("Resume from \(Duration.seconds(pos).formatted(.time(pattern: .hourMinuteSecond)))", systemImage: "play.fill")
                 }
+                .primaryButtonStyle()
                 Button {
                     model.record(request, position: 0, duration: 1)
                     router.play(request)
                 } label: {
                     Label("Start over", systemImage: "arrow.counterclockwise")
                 }
+                .secondaryButtonStyle()
             } else {
                 Button { router.play(request) } label: { Label("Play", systemImage: "play.fill") }
+                    .primaryButtonStyle()
             }
         }
     }
@@ -111,17 +115,18 @@ struct ShowDetailView: View {
                                 EpisodeRow(episode: ep, request: request(for: ep))
                             }
                         }
-                        .focusSection()
+                        .tvFocusSection()
                     } else if let error {
                         Text(error).foregroundStyle(.secondary)
                     } else {
                         ProgressView()
                     }
                 }
-                .padding(.horizontal, 80)
-                .padding(.vertical, 40)
+                .padding(.horizontal, Metrics.detailMargin)
+                .padding(.vertical, Metrics.detailMargin / 2)
             }
         }
+        .detailToolbar()
         .task { await load() }
     }
 
@@ -138,11 +143,13 @@ struct ShowDetailView: View {
                     Label(model.fraction(for: request(for: next).progressKey) ?? 0 > 0
                           ? "Resume \(next.code)" : "Play \(next.code)", systemImage: "play.fill")
                 }
-                .focusSection()
+                .primaryButtonStyle()
+                .tvFocusSection()
             }
         }
     }
 
+    #if os(tvOS)
     private func seasonPicker(_ detail: ShowDetail) -> some View {
         ScrollView(.horizontal) {
             HStack(spacing: 20) {
@@ -160,6 +167,19 @@ struct ShowDetailView: View {
         .scrollClipDisabled()
         .focusSection()
     }
+    #else
+    /// Segmented control for a few seasons, a pop-up menu for long-running shows.
+    @ViewBuilder private func seasonPicker(_ detail: ShowDetail) -> some View {
+        let picker = Picker("Season", selection: $season) {
+            ForEach(detail.seasons, id: \.self) { Text("Season \($0)").tag($0) }
+        }
+        if detail.seasons.count <= 5 {
+            picker.pickerStyle(.segmented).fixedSize()
+        } else {
+            picker.pickerStyle(.menu).buttonStyle(.bordered)
+        }
+    }
+    #endif
 
     private func request(for ep: Episode) -> PlaybackRequest {
         PlaybackRequest(kind: .show, id: ep.id, title: item.name,
@@ -201,7 +221,7 @@ struct EpisodeRow: View {
             HStack(alignment: .top, spacing: 30) {
                 Text(episode.number)
                     .font(.title2).bold()
-                    .frame(width: 70)
+                    .frame(width: Metrics.episodeNumberWidth)
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text(episode.name ?? "Episode \(episode.number)").font(.headline)
@@ -213,13 +233,25 @@ struct EpisodeRow: View {
                             .font(.callout).foregroundStyle(.secondary).lineLimit(2)
                     }
                     if let f = model.fraction(for: request.progressKey), f > 0 {
-                        ProgressBar(fraction: f).frame(width: 300)
+                        ProgressBar(fraction: f).frame(width: Metrics.episodeProgressWidth)
                     }
                 }
             }
-            .padding(24)
+            .padding(Metrics.episodePadding)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
-        .buttonStyle(.card)
+        .cardButtonStyle()
+    }
+}
+
+extension View {
+    /// Lets the backdrop run under a transparent navigation bar on iPad.
+    @ViewBuilder func detailToolbar() -> some View {
+        #if os(tvOS)
+        self
+        #else
+        navigationBarTitleDisplayMode(.inline).toolbarBackground(.hidden, for: .navigationBar)
+        #endif
     }
 }

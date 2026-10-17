@@ -13,7 +13,7 @@ struct PosterCard: View {
                     if let progress, progress > 0 { ProgressBar(fraction: progress).padding(10) }
                 }
         }
-        .buttonStyle(.card)
+        .cardButtonStyle()
         .accessibilityLabel(item.name)
     }
 }
@@ -21,7 +21,7 @@ struct PosterCard: View {
 struct PosterImage: View {
     let url: URL?
     let title: String
-    static let size = CGSize(width: 240, height: 360)
+    static let size = Metrics.poster
 
     var body: some View {
         AsyncImage(url: url, transaction: Transaction(animation: .easeIn(duration: 0.2))) { phase in
@@ -60,10 +60,10 @@ struct Shelf: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title).font(.title3).bold()
             ScrollView(.horizontal) {
-                LazyHStack(spacing: 40) {
+                LazyHStack(spacing: Metrics.shelfSpacing) {
                     ForEach(items) { PosterCard(item: $0) }
                 }
-                .padding(.vertical, 30)
+                .padding(.vertical, Metrics.shelfInset)
             }
             .scrollClipDisabled()
         }
@@ -102,7 +102,7 @@ struct HomeView: View {
                     Shelf(title: "Top rated shows", items: Array(model.shows.sorted { ($0.imdbRating ?? 0) > ($1.imdbRating ?? 0) }.prefix(30)))
                     Shelf(title: "Top rated movies", items: Array(model.movies.sorted { ($0.imdbRating ?? 0) > ($1.imdbRating ?? 0) }.prefix(30)))
                 }
-                .padding(.horizontal, 60)
+                .padding(.horizontal, Metrics.margin)
             }
         }
     }
@@ -125,12 +125,12 @@ struct ContinueWatchingShelf: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Continue watching").font(.title3).bold()
             ScrollView(.horizontal) {
-                LazyHStack(spacing: 40) {
+                LazyHStack(spacing: Metrics.shelfSpacing) {
                     ForEach(model.continueWatching, id: \.request) { entry in
                         Button { router.play(entry.request) } label: {
                             VStack(alignment: .leading, spacing: 0) {
                                 PosterImage(url: poster(for: entry.request), title: entry.request.title)
-                                    .frame(width: 240, height: 300)
+                                    .frame(width: PosterImage.size.width, height: PosterImage.size.height * 5 / 6)
                                     .clipped()
                                 VStack(alignment: .leading, spacing: 6) {
                                     Text(entry.request.title).font(.caption).bold().lineLimit(1)
@@ -138,10 +138,10 @@ struct ContinueWatchingShelf: View {
                                     ProgressBar(fraction: entry.fraction)
                                 }
                                 .padding(12)
-                                .frame(width: 240, alignment: .leading)
+                                .frame(width: PosterImage.size.width, alignment: .leading)
                             }
                         }
-                        .buttonStyle(.card)
+                        .cardButtonStyle()
                         .contextMenu {
                             if let parent = entry.request.parentID {
                                 NavigationLink("Go to show", value: ShowLink(id: parent, title: entry.request.title, posterThumb: entry.request.posterThumb))
@@ -149,7 +149,7 @@ struct ContinueWatchingShelf: View {
                         }
                     }
                 }
-                .padding(.vertical, 30)
+                .padding(.vertical, Metrics.shelfInset)
             }
             .scrollClipDisabled()
         }
@@ -191,6 +191,7 @@ struct CatalogView: View {
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 30) {
+                    #if os(tvOS)
                     HStack(spacing: 30) {
                         Picker("Sort", selection: $sort) {
                             ForEach(sorts) { Text($0.rawValue).tag($0) }
@@ -208,14 +209,35 @@ struct CatalogView: View {
                         Text("\(items.count) titles").foregroundStyle(.secondary)
                     }
                     .focusSection()
+                    #else
+                    Text("\(items.count) titles\(genre.map { " · \($0)" } ?? "")").foregroundStyle(.secondary)
+                    #endif
 
-                    LazyVGrid(columns: Array(repeating: GridItem(.fixed(PosterImage.size.width), spacing: 48), count: 6), spacing: 60) {
+                    LazyVGrid(columns: Metrics.gridColumns, spacing: Metrics.gridSpacing) {
                         ForEach(items) { PosterCard(item: $0) }
                     }
-                    .focusSection()
+                    .tvFocusSection()
                 }
-                .padding(.horizontal, 60)
+                .padding(.horizontal, Metrics.margin)
             }
+            #if !os(tvOS)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Picker("Sort", selection: $sort) {
+                            ForEach(sorts) { Text($0.rawValue).tag($0) }
+                        }
+                        Picker("Genre", selection: $genre) {
+                            Text("All genres").tag(String?.none)
+                            ForEach(model.genres, id: \.self) { Text($0).tag(String?.some($0)) }
+                        }
+                        .pickerStyle(.menu)
+                    } label: {
+                        Label("Sort and filter", systemImage: "line.3.horizontal.decrease.circle")
+                    }
+                }
+            }
+            #endif
         }
     }
 }
@@ -241,7 +263,7 @@ struct SearchView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.top, 80)
             } else {
-                LazyVGrid(columns: Array(repeating: GridItem(.fixed(PosterImage.size.width), spacing: 48), count: 6), spacing: 60) {
+                LazyVGrid(columns: Metrics.gridColumns, spacing: Metrics.gridSpacing) {
                     ForEach(results.prefix(120)) { item in
                         VStack(spacing: 14) {
                             PosterCard(item: item)
@@ -251,7 +273,7 @@ struct SearchView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 60)
+                .padding(.horizontal, Metrics.margin)
             }
         }
         .searchable(text: $router.searchQuery, prompt: "Shows and movies")

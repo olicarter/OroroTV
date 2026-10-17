@@ -1,4 +1,4 @@
-// Renders the tvOS app icon layers and top shelf images from an SVG logo.
+// Renders the tvOS app icon layers and top shelf images, and the iPad app icon, from an SVG logo.
 // Usage: swift tools/render_icons.swift <logo.svg> <Assets.xcassets>
 import AppKit
 
@@ -91,4 +91,11 @@ imageStack("App Icon", size: (400, 240), scales: [1, 2])
 imageStack("App Icon - App Store", size: (1280, 768), scales: [1])
 topShelf("Top Shelf Image", size: (1920, 720))
 topShelf("Top Shelf Image Wide", size: (2320, 720))
-print("Wrote", brand.path)
+
+// iPad: a single 1024pt opaque icon; the system derives every other size.
+let ios = catalog.appendingPathComponent("AppIcon.appiconset")
+try? FileManager.default.removeItem(at: ios)
+try! FileManager.default.createDirectory(at: ios, withIntermediateDirectories: true)
+render(width: 1024, height: 1024, fill: true, logoHeight: 0.3, to: ios.appendingPathComponent("icon.png"))
+writeJSON(["info": info, "images": [["filename": "icon.png", "idiom": "universal", "platform": "ios", "size": "1024x1024"]]], to: ios)
+print("Wrote", brand.path, "and", ios.path)
