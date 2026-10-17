@@ -1,0 +1,29 @@
+name: OroroTV
+options:
+  bundleIdPrefix: dev.olicarter
+  deploymentTarget:
+    tvOS: "17.0"
+targets:
+  OroroTV:
+    type: application
+    platform: tvOS
+    sources: [Sources, Resources]
+    info:
+      path: Info.plist
+      properties:
+        CFBundleURLTypes:
+          - CFBundleURLName: dev.olicarter.ororotv
+            CFBundleURLSchemes: [ororotv]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.olicarter.ororotv
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Ororo
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIUserInterfaceStyle: Dark
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: MPCJ63V5P5
+        ASSETCATALOG_COMPILER_APPICON_NAME: "App Icon & Top Shelf Image"

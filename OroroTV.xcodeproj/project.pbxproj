@@ -1,0 +1,353 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F4AF2FC2BAF267536603E31 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12837E420A104C69A0503F82 /* Models.swift */; };
+		46BEB2E94C10C6D731C0DF5B /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF82CE64F1EEA2A1CB3BC07F /* Player.swift */; };
+		566F4972565CEEB0283328A7 /* DetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AA38AC0974828304F59CF5 /* DetailViews.swift */; };
+		B0255750C69482CC09814C8F /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92A56E71C9328A37DE45FBD /* LoginView.swift */; };
+		CB8735C29B4820EC8426A48C /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D450B4585CC0A384AEB6D45E /* AppModel.swift */; };
+		D1287A1A30EB5B619CE58E92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DD29E03C9A9B23F8D528A41A /* Assets.xcassets */; };
+		D9A0522C29F98B212BC891C8 /* OroroTVApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EE4036BB5A5A387FFD2A58F /* OroroTVApp.swift */; };
+		DBFFF61894DBD1D6A80C4D39 /* OroroAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71A8C65AE2F31D192B0AB622 /* OroroAPI.swift */; };
+		FAF8460E45630748EF569720 /* BrowseViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C848B7BA3AE94D6F7212F6 /* BrowseViews.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		12837E420A104C69A0503F82 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		1EE4036BB5A5A387FFD2A58F /* OroroTVApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OroroTVApp.swift; sourceTree = "<group>"; };
+		2164E768F719478015A71339 /* OroroTV.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OroroTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		35C848B7BA3AE94D6F7212F6 /* BrowseViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseViews.swift; sourceTree = "<group>"; };
+		71A8C65AE2F31D192B0AB622 /* OroroAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OroroAPI.swift; sourceTree = "<group>"; };
+		A3AA38AC0974828304F59CF5 /* DetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews.swift; sourceTree = "<group>"; };
+		D450B4585CC0A384AEB6D45E /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		D92A56E71C9328A37DE45FBD /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		DD29E03C9A9B23F8D528A41A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FF82CE64F1EEA2A1CB3BC07F /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		15B0426CB39F6F84C94E904E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				DD29E03C9A9B23F8D528A41A /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		86FFFE50007C5530A97F623C = {
+			isa = PBXGroup;
+			children = (
+				15B0426CB39F6F84C94E904E /* Resources */,
+				8B0C5946A7946E3BB401063E /* Sources */,
+				AAF7064916ECB8FF14DB73AC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8B0C5946A7946E3BB401063E /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				D450B4585CC0A384AEB6D45E /* AppModel.swift */,
+				35C848B7BA3AE94D6F7212F6 /* BrowseViews.swift */,
+				A3AA38AC0974828304F59CF5 /* DetailViews.swift */,
+				D92A56E71C9328A37DE45FBD /* LoginView.swift */,
+				12837E420A104C69A0503F82 /* Models.swift */,
+				71A8C65AE2F31D192B0AB622 /* OroroAPI.swift */,
+				1EE4036BB5A5A387FFD2A58F /* OroroTVApp.swift */,
+				FF82CE64F1EEA2A1CB3BC07F /* Player.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		AAF7064916ECB8FF14DB73AC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2164E768F719478015A71339 /* OroroTV.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		93912FE5387B469D084D0A26 /* OroroTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B387F55EDBFF404A8E40D8C /* Build configuration list for PBXNativeTarget "OroroTV" */;
+			buildPhases = (
+				46A17BD55344A8501A314649 /* Sources */,
+				9F4EBBA0971CCEE995C0E626 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OroroTV;
+			packageProductDependencies = (
+			);
+			productName = OroroTV;
+			productReference = 2164E768F719478015A71339 /* OroroTV.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		09D8EA0A2483F6DFB2590AF6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					93912FE5387B469D084D0A26 = {
+						DevelopmentTeam = MPCJ63V5P5;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 62CEA641DB037CCA0E13A926 /* Build configuration list for PBXProject "OroroTV" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 86FFFE50007C5530A97F623C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = AAF7064916ECB8FF14DB73AC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				93912FE5387B469D084D0A26 /* OroroTV */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9F4EBBA0971CCEE995C0E626 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D1287A1A30EB5B619CE58E92 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		46A17BD55344A8501A314649 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB8735C29B4820EC8426A48C /* AppModel.swift in Sources */,
+				FAF8460E45630748EF569720 /* BrowseViews.swift in Sources */,
+				566F4972565CEEB0283328A7 /* DetailViews.swift in Sources */,
+				B0255750C69482CC09814C8F /* LoginView.swift in Sources */,
+				0F4AF2FC2BAF267536603E31 /* Models.swift in Sources */,
+				DBFFF61894DBD1D6A80C4D39 /* OroroAPI.swift in Sources */,
+				D9A0522C29F98B212BC891C8 /* OroroTVApp.swift in Sources */,
+				46BEB2E94C10C6D731C0DF5B /* Player.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		62CB21ECD98177409C4FEB18 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Release;
+		};
+		B8584F5539DAF6712BFEAC35 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MPCJ63V5P5;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Ororo;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.olicarter.ororotv;
+				SDKROOT = appletvos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Release;
+		};
+		C7590FDF026D7F9D4EB6A6A1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Debug;
+		};
+		E1B3A7F09951BF74EFB036E9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MPCJ63V5P5;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Ororo;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.olicarter.ororotv;
+				SDKROOT = appletvos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0B387F55EDBFF404A8E40D8C /* Build configuration list for PBXNativeTarget "OroroTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E1B3A7F09951BF74EFB036E9 /* Debug */,
+				B8584F5539DAF6712BFEAC35 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		62CEA641DB037CCA0E13A926 /* Build configuration list for PBXProject "OroroTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C7590FDF026D7F9D4EB6A6A1 /* Debug */,
+				62CB21ECD98177409C4FEB18 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 09D8EA0A2483F6DFB2590AF6 /* Project object */;
+}
