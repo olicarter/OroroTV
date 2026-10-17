@@ -22,6 +22,21 @@ struct LoginView: View {
     #endif
 
     var body: some View {
+        #if os(tvOS)
+        form
+        #else
+        // Centred when it fits; scrolls when the keyboard leaves too little room
+        // (landscape on smaller iPads, or a short Split View window).
+        GeometryReader { geo in
+            ScrollView {
+                form.frame(maxWidth: .infinity, minHeight: geo.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        #endif
+    }
+
+    private var form: some View {
         layout {
             VStack(alignment: alignment, spacing: 24) {
                 Text("ororo")
@@ -69,7 +84,7 @@ struct LoginView: View {
             #if !os(tvOS)
             .textFieldStyle(.roundedBorder)
             #endif
-            .frame(width: formWidth)
+            .frame(maxWidth: formWidth)
         }
         .padding(Metrics.detailMargin)
         .task {

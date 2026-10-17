@@ -5,10 +5,12 @@ import SwiftUI
 struct PosterCard: View {
     let item: CatalogItem
     var progress: Double? = nil
+    /// `nil` fills the width offered (grid columns); shelves use the fixed poster width.
+    var width: CGFloat? = PosterImage.size.width
 
     var body: some View {
         NavigationLink(value: item) {
-            PosterImage(url: item.posterURL, title: item.name)
+            PosterImage(url: item.posterURL, title: item.name, width: width)
                 .overlay(alignment: .bottom) {
                     if let progress, progress > 0 { ProgressBar(fraction: progress).padding(10) }
                 }
@@ -21,21 +23,30 @@ struct PosterCard: View {
 struct PosterImage: View {
     let url: URL?
     let title: String
+    /// `nil` fills the width offered at the poster's aspect ratio.
+    var width: CGFloat? = Self.size.width
     static let size = Metrics.poster
 
     var body: some View {
-        AsyncImage(url: url, transaction: Transaction(animation: .easeIn(duration: 0.2))) { phase in
-            if let image = phase.image {
-                image.resizable().aspectRatio(contentMode: .fill)
-            } else {
-                ZStack {
-                    LinearGradient(colors: [.gray.opacity(0.35), .gray.opacity(0.15)], startPoint: .top, endPoint: .bottom)
-                    Text(title).font(.caption).multilineTextAlignment(.center).padding()
+        let canvas = Color.clear
+            .overlay {
+                AsyncImage(url: url, transaction: Transaction(animation: .easeIn(duration: 0.2))) { phase in
+                    if let image = phase.image {
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    } else {
+                        ZStack {
+                            LinearGradient(colors: [.gray.opacity(0.35), .gray.opacity(0.15)], startPoint: .top, endPoint: .bottom)
+                            Text(title).font(.caption).multilineTextAlignment(.center).padding()
+                        }
+                    }
                 }
             }
+            .clipped()
+        if let width {
+            canvas.frame(width: width, height: width * Self.size.height / Self.size.width)
+        } else {
+            canvas.aspectRatio(Self.size.width / Self.size.height, contentMode: .fit)
         }
-        .frame(width: Self.size.width, height: Self.size.height)
-        .clipped()
     }
 }
 
@@ -214,7 +225,7 @@ struct CatalogView: View {
                     #endif
 
                     LazyVGrid(columns: Metrics.gridColumns, spacing: Metrics.gridSpacing) {
-                        ForEach(items) { PosterCard(item: $0) }
+                        ForEach(items) { PosterCard(item: $0, width: nil) }
                     }
                     .tvFocusSection()
                 }
@@ -266,7 +277,7 @@ struct SearchView: View {
                 LazyVGrid(columns: Metrics.gridColumns, spacing: Metrics.gridSpacing) {
                     ForEach(results.prefix(120)) { item in
                         VStack(spacing: 14) {
-                            PosterCard(item: item)
+                            PosterCard(item: item, width: nil)
                             Text(item.name).font(.caption).lineLimit(1)
                             Text("\(item.kind == .show ? "Show" : "Movie") · \(item.year ?? "")")
                                 .font(.caption2).foregroundStyle(.secondary)

@@ -1,16 +1,22 @@
 import SwiftUI
 
+/// Fills whatever space it's given. The image sits in an overlay so its aspect ratio can't
+/// widen the layout: backdrops are 16:9, which only matches the screen on tvOS.
 struct Backdrop: View {
     let url: URL?
     var body: some View {
-        AsyncImage(url: url) { image in
-            image.resizable().aspectRatio(contentMode: .fill)
-        } placeholder: {
-            Color.black
-        }
-        .overlay(LinearGradient(colors: [.black.opacity(0.35), .black.opacity(0.85), .black],
-                                startPoint: .top, endPoint: .bottom))
-        .ignoresSafeArea()
+        Color.black
+            .overlay {
+                AsyncImage(url: url) { image in
+                    image.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Color.black
+                }
+            }
+            .clipped()
+            .overlay(LinearGradient(colors: [.black.opacity(0.35), .black.opacity(0.85), .black],
+                                    startPoint: .top, endPoint: .bottom))
+            .ignoresSafeArea()
     }
 }
 
@@ -23,10 +29,12 @@ struct MetaLine: View {
     var body: some View {
         HStack(spacing: 18) {
             if let year { Text(year) }
+            // Genres go first when space runs out.
             if let rating { Label(String(format: "%.1f", rating), systemImage: "star.fill") }
             if let extra { Text(extra) }
-            if !genres.isEmpty { Text(genres.prefix(3).joined(separator: " · ")) }
+            if !genres.isEmpty { Text(genres.prefix(3).joined(separator: " · ")).layoutPriority(-1) }
         }
+        .lineLimit(1)
         .font(.callout)
         .foregroundStyle(.secondary)
     }
@@ -43,24 +51,32 @@ struct MovieDetailView: View {
         PlaybackRequest(kind: .movie, id: item.id, title: item.name, subtitle: item.year, posterThumb: item.posterThumb)
     }
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    /// Poster beside the details, or above them in a narrow window.
+    private var layout: AnyLayout {
+        sizeClass == .compact
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: Metrics.detailSpacing))
+            : AnyLayout(HStackLayout(alignment: .bottom, spacing: Metrics.detailSpacing))
+    }
+
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            Backdrop(url: item.backdropURL ?? item.posterURL)
-            HStack(alignment: .bottom, spacing: Metrics.detailSpacing) {
-                PosterImage(url: item.posterURL, title: item.name)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                VStack(alignment: .leading, spacing: 24) {
-                    Text(item.name).font(.largeTitle).bold()
-                    MetaLine(year: item.year, rating: item.imdbRating, genres: item.genres,
-                             extra: item.length.map { "\($0) min" })
-                    if let desc = item.desc {
-                        Text(desc).font(.body).lineLimit(5).frame(maxWidth: 1100, alignment: .leading)
-                    }
-                    PlayButtons(request: request)
+        layout {
+            PosterImage(url: item.posterURL, title: item.name)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            VStack(alignment: .leading, spacing: 24) {
+                Text(item.name).font(.largeTitle).bold()
+                MetaLine(year: item.year, rating: item.imdbRating, genres: item.genres,
+                         extra: item.length.map { "\($0) min" })
+                if let desc = item.desc {
+                    Text(desc).font(.body).lineLimit(5).frame(maxWidth: 1100, alignment: .leading)
                 }
+                PlayButtons(request: request)
             }
-            .padding(Metrics.detailMargin)
         }
+        .padding(Metrics.detailMargin)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+        .background { Backdrop(url: item.backdropURL ?? item.posterURL) }
         .detailToolbar()
     }
 }
@@ -70,24 +86,30 @@ struct PlayButtons: View {
     @EnvironmentObject var model: AppModel
     @EnvironmentObject var router: PlaybackRouter
 
+    /// Side by side when they fit, stacked in narrow windows.
     var body: some View {
-        HStack(spacing: Metrics.buttonSpacing) {
-            if let pos = model.savedPosition(for: request.progressKey) {
-                Button { router.play(request) } label: {
-                    Label("Resume from \(Duration.seconds(pos).formatted(.time(pattern: .hourMinuteSecond)))", systemImage: "play.fill")
-                }
-                .primaryButtonStyle()
-                Button {
-                    model.record(request, position: 0, duration: 1)
-                    router.play(request)
-                } label: {
-                    Label("Start over", systemImage: "arrow.counterclockwise")
-                }
-                .secondaryButtonStyle()
-            } else {
-                Button { router.play(request) } label: { Label("Play", systemImage: "play.fill") }
-                    .primaryButtonStyle()
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: Metrics.buttonSpacing) { buttons }
+            VStack(alignment: .leading, spacing: Metrics.buttonSpacing) { buttons }
+        }
+    }
+
+    @ViewBuilder private var buttons: some View {
+        if let pos = model.savedPosition(for: request.progressKey) {
+            Button { router.play(request) } label: {
+                Label("Resume from \(Duration.seconds(pos).formatted(.time(pattern: .hourMinuteSecond)))", systemImage: "play.fill")
             }
+            .primaryButtonStyle()
+            Button {
+                model.record(request, position: 0, duration: 1)
+                router.play(request)
+            } label: {
+                Label("Start over", systemImage: "arrow.counterclockwise")
+            }
+            .secondaryButtonStyle()
+        } else {
+            Button { router.play(request) } label: { Label("Play", systemImage: "play.fill") }
+                .primaryButtonStyle()
         }
     }
 }
@@ -168,14 +190,13 @@ struct ShowDetailView: View {
         .focusSection()
     }
     #else
-    /// Segmented control for a few seasons, a pop-up menu for long-running shows.
-    @ViewBuilder private func seasonPicker(_ detail: ShowDetail) -> some View {
+    /// Segmented control when every season fits across, otherwise a pop-up menu.
+    private func seasonPicker(_ detail: ShowDetail) -> some View {
         let picker = Picker("Season", selection: $season) {
             ForEach(detail.seasons, id: \.self) { Text("Season \($0)").tag($0) }
         }
-        if detail.seasons.count <= 5 {
+        return ViewThatFits(in: .horizontal) {
             picker.pickerStyle(.segmented).fixedSize()
-        } else {
             picker.pickerStyle(.menu).buttonStyle(.bordered)
         }
     }
