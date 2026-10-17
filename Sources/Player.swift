@@ -98,7 +98,7 @@ final class PlayerController: NSObject, ObservableObject {
                 await selectSubtitle(sub)
             }
             #else
-            await selectNativeSubtitle(preferred, in: item)
+            await selectMedia(subtitles: preferred, in: item)
             #endif
         } catch {
             self.error = error.localizedDescription
@@ -120,9 +120,15 @@ final class PlayerController: NSObject, ObservableObject {
     }
 
     #if !os(tvOS)
-    /// Picks the saved language in AVKit's subtitles menu, then remembers whatever the viewer
-    /// chooses there as the new default.
-    private func selectNativeSubtitle(_ language: String, in item: AVPlayerItem) async {
+    /// Makes sure an audio track is playing, picks the saved language in AVKit's subtitles menu,
+    /// then remembers whatever the viewer chooses there as the new default.
+    private func selectMedia(subtitles language: String, in item: AVPlayerItem) async {
+        // Ororo's audio renditions aren't marked DEFAULT or AUTOSELECT, so iOS can leave the
+        // video silent. SubtitledStream marks them; this covers streams it couldn't rewrite.
+        if let audio = try? await item.asset.loadMediaSelectionGroup(for: .audible),
+           item.currentMediaSelection.selectedMediaOption(in: audio) == nil {
+            item.select(audio.defaultOption ?? audio.options.first, in: audio)
+        }
         guard let group = try? await item.asset.loadMediaSelectionGroup(for: .legible) else { return }
         let option = group.options.first { $0.extendedLanguageTag == language }
         item.select(language == "off" ? nil : option, in: group)

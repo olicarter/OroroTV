@@ -4,7 +4,7 @@ import AVFoundation
 /// them in its own subtitles menu and draws them itself (Picture in Picture included).
 ///
 /// The asset's URL uses a private scheme, so AVFoundation asks this delegate for it. We fetch the
-/// real master playlist and add a SUBTITLES group with one rendition per language; each rendition
+/// real master playlist, mark its audio renditions as the default, and add a SUBTITLES group with one rendition per language; each rendition
 /// is a one-segment playlist whose segment is the language's VTT file on ororo.tv (AVFoundation
 /// only loads media segments over HTTP). Variant and audio playlists are made absolute and load
 /// directly.
@@ -91,6 +91,11 @@ final class SubtitledStream: NSObject, AVAssetResourceLoaderDelegate {
             } else if line.hasPrefix("#"), let range = line.range(of: #"URI="[^"]*""#, options: .regularExpression) {
                 let uri = String(line[range].dropFirst(5).dropLast())
                 line.replaceSubrange(range, with: "URI=\"\(absolute(uri))\"")
+                // Each variant has a single audio rendition with neither attribute, which iOS
+                // treats as "don't select": the video plays silently.
+                if line.hasPrefix("#EXT-X-MEDIA:TYPE=AUDIO"), !line.contains("DEFAULT=") {
+                    line += ",DEFAULT=YES,AUTOSELECT=YES"
+                }
             } else if !line.hasPrefix("#") {
                 line = absolute(line)
                 if nextIsVariant, firstVariant == nil { firstVariant = URL(string: line) }

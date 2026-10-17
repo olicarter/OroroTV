@@ -79,6 +79,7 @@ struct Shelf: View {
             // Full-width scroll view with the inset inside it, so posters scroll off the
             // screen edge rather than vanishing at the page margin.
             .contentMargins(.horizontal, Metrics.margin, for: .scrollContent)
+            .scrollIndicators(.hidden)
             .scrollClipDisabled()
         }
     }
@@ -167,6 +168,7 @@ struct ContinueWatchingShelf: View {
             // Full-width scroll view with the inset inside it, so posters scroll off the
             // screen edge rather than vanishing at the page margin.
             .contentMargins(.horizontal, Metrics.margin, for: .scrollContent)
+            .scrollIndicators(.hidden)
             .scrollClipDisabled()
         }
     }
