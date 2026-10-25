@@ -11,6 +11,7 @@
 		0C5539A21C3E833BA374F8F9 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12837E420A104C69A0503F82 /* Models.swift */; };
 		0E9449854351B139519BA101 /* PlaylistServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6159A781577EC51F37CF4D /* PlaylistServer.swift */; };
 		0F4AF2FC2BAF267536603E31 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12837E420A104C69A0503F82 /* Models.swift */; };
+		148BB442960BA03C9D85A7C2 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C8936FD7CBBBE946FAB34B2 /* ImageCache.swift */; };
 		1B2BDCFA23D5C58BB8631260 /* SubtitledStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE704C83A67375B2B125B5B /* SubtitledStream.swift */; };
 		309DEE745D7DDF814030E41E /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF82CE64F1EEA2A1CB3BC07F /* Player.swift */; };
 		3479A5FDE66C36EDC8F1E707 /* PlaylistServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6159A781577EC51F37CF4D /* PlaylistServer.swift */; };
@@ -26,6 +27,7 @@
 		B0255750C69482CC09814C8F /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92A56E71C9328A37DE45FBD /* LoginView.swift */; };
 		CB23EA48F76DF15FCB4E7067 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27521DCCA75FBE2D71B0C608 /* Platform.swift */; };
 		CB8735C29B4820EC8426A48C /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D450B4585CC0A384AEB6D45E /* AppModel.swift */; };
+		D06BD29ED812A12A12614707 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C8936FD7CBBBE946FAB34B2 /* ImageCache.swift */; };
 		D1287A1A30EB5B619CE58E92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DD29E03C9A9B23F8D528A41A /* Assets.xcassets */; };
 		D9A0522C29F98B212BC891C8 /* OroroTVApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EE4036BB5A5A387FFD2A58F /* OroroTVApp.swift */; };
 		DBFFF61894DBD1D6A80C4D39 /* OroroAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71A8C65AE2F31D192B0AB622 /* OroroAPI.swift */; };
@@ -40,6 +42,7 @@
 		2164E768F719478015A71339 /* OroroTV.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OroroTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27521DCCA75FBE2D71B0C608 /* Platform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Platform.swift; sourceTree = "<group>"; };
 		35C848B7BA3AE94D6F7212F6 /* BrowseViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseViews.swift; sourceTree = "<group>"; };
+		4C8936FD7CBBBE946FAB34B2 /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		71A8C65AE2F31D192B0AB622 /* OroroAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OroroAPI.swift; sourceTree = "<group>"; };
 		A3AA38AC0974828304F59CF5 /* DetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews.swift; sourceTree = "<group>"; };
 		D450B4585CC0A384AEB6D45E /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
@@ -74,6 +77,7 @@
 				D450B4585CC0A384AEB6D45E /* AppModel.swift */,
 				35C848B7BA3AE94D6F7212F6 /* BrowseViews.swift */,
 				A3AA38AC0974828304F59CF5 /* DetailViews.swift */,
+				4C8936FD7CBBBE946FAB34B2 /* ImageCache.swift */,
 				D92A56E71C9328A37DE45FBD /* LoginView.swift */,
 				12837E420A104C69A0503F82 /* Models.swift */,
 				71A8C65AE2F31D192B0AB622 /* OroroAPI.swift */,
@@ -200,6 +204,7 @@
 				CB8735C29B4820EC8426A48C /* AppModel.swift in Sources */,
 				FAF8460E45630748EF569720 /* BrowseViews.swift in Sources */,
 				566F4972565CEEB0283328A7 /* DetailViews.swift in Sources */,
+				D06BD29ED812A12A12614707 /* ImageCache.swift in Sources */,
 				B0255750C69482CC09814C8F /* LoginView.swift in Sources */,
 				0F4AF2FC2BAF267536603E31 /* Models.swift in Sources */,
 				DBFFF61894DBD1D6A80C4D39 /* OroroAPI.swift in Sources */,
@@ -218,6 +223,7 @@
 				69765C81B6C585E44C87E5A2 /* AppModel.swift in Sources */,
 				85A3C031225DCE9C48286E65 /* BrowseViews.swift in Sources */,
 				DD081240101ABB6D46206BE5 /* DetailViews.swift in Sources */,
+				148BB442960BA03C9D85A7C2 /* ImageCache.swift in Sources */,
 				0816E66F9EA20353602F241D /* LoginView.swift in Sources */,
 				0C5539A21C3E833BA374F8F9 /* Models.swift in Sources */,
 				4D32B36D97E5A56F4C65C464 /* OroroAPI.swift in Sources */,

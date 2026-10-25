@@ -26,22 +26,29 @@ struct PosterImage: View {
     /// `nil` fills the width offered at the poster's aspect ratio.
     var width: CGFloat? = Self.size.width
     static let size = Metrics.poster
+    @State private var loaded: UIImage?
 
     var body: some View {
+        // Cached (usually prefetched) posters show at once; only a fresh download fades in.
+        let image = loaded ?? url.flatMap(ImageCache.shared.cached)
         let canvas = Color.clear
             .overlay {
-                AsyncImage(url: url, transaction: Transaction(animation: .easeIn(duration: 0.2))) { phase in
-                    if let image = phase.image {
-                        image.resizable().aspectRatio(contentMode: .fill)
-                    } else {
-                        ZStack {
-                            LinearGradient(colors: [.gray.opacity(0.35), .gray.opacity(0.15)], startPoint: .top, endPoint: .bottom)
-                            Text(title).font(.caption).multilineTextAlignment(.center).padding()
-                        }
+                if let image {
+                    Image(uiImage: image).resizable().aspectRatio(contentMode: .fill)
+                } else {
+                    ZStack {
+                        LinearGradient(colors: [.gray.opacity(0.35), .gray.opacity(0.15)], startPoint: .top, endPoint: .bottom)
+                        Text(title).font(.caption).multilineTextAlignment(.center).padding()
                     }
                 }
             }
             .clipped()
+            .task(id: url) {
+                loaded = nil
+                guard let url, ImageCache.shared.cached(url) == nil else { return }
+                let image = await ImageCache.shared.image(for: url)
+                withAnimation(.easeIn(duration: 0.2)) { loaded = image }
+            }
         if let width {
             canvas.frame(width: width, height: width * Self.size.height / Self.size.width)
         } else {
@@ -72,7 +79,10 @@ struct Shelf: View {
             Text(title).font(.title3).bold().padding(.horizontal, Metrics.margin)
             ScrollView(.horizontal) {
                 LazyHStack(spacing: Metrics.shelfSpacing) {
-                    ForEach(items) { PosterCard(item: $0) }
+                    let posters = items.map(\.posterURL)
+                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                        PosterCard(item: item).prefetchPosters(after: index, in: posters)
+                    }
                 }
                 .padding(.vertical, Metrics.shelfInset)
             }
@@ -140,7 +150,8 @@ struct ContinueWatchingShelf: View {
             Text("Continue watching").font(.title3).bold().padding(.horizontal, Metrics.margin)
             ScrollView(.horizontal) {
                 LazyHStack(spacing: Metrics.shelfSpacing) {
-                    ForEach(model.continueWatching, id: \.request) { entry in
+                    let posters = model.continueWatching.map { poster(for: $0.request) }
+                    ForEach(Array(model.continueWatching.enumerated()), id: \.element.request) { index, entry in
                         Button { router.play(entry.request) } label: {
                             VStack(alignment: .leading, spacing: 0) {
                                 PosterImage(url: poster(for: entry.request), title: entry.request.title)
@@ -156,6 +167,7 @@ struct ContinueWatchingShelf: View {
                             }
                         }
                         .cardButtonStyle()
+                        .prefetchPosters(after: index, in: posters)
                         .contextMenu {
                             if let parent = entry.request.parentID {
                                 NavigationLink("Go to show", value: ShowLink(id: parent, title: entry.request.title, posterThumb: entry.request.posterThumb))
@@ -231,8 +243,13 @@ struct CatalogView: View {
                     Text("\(items.count) titles\(genre.map { " · \($0)" } ?? "")").foregroundStyle(.secondary)
                     #endif
 
+                    let list = items
+                    let posters = list.map(\.posterURL)
                     LazyVGrid(columns: Metrics.gridColumns, spacing: Metrics.gridSpacing) {
-                        ForEach(items) { PosterCard(item: $0, width: nil) }
+                        ForEach(Array(list.enumerated()), id: \.element.id) { index, item in
+                            // A couple of rows ahead.
+                            PosterCard(item: item, width: nil).prefetchPosters(after: index, in: posters, count: 18)
+                        }
                     }
                     .tvFocusSection()
                 }
@@ -281,14 +298,17 @@ struct SearchView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.top, 80)
             } else {
+                let results = Array(results.prefix(120))
+                let posters = results.map(\.posterURL)
                 LazyVGrid(columns: Metrics.gridColumns, spacing: Metrics.gridSpacing) {
-                    ForEach(results.prefix(120)) { item in
+                    ForEach(Array(results.enumerated()), id: \.element.id) { index, item in
                         VStack(spacing: 14) {
                             PosterCard(item: item, width: nil)
                             Text(item.name).font(.caption).lineLimit(1)
                             Text("\(item.kind == .show ? "Show" : "Movie") · \(item.year ?? "")")
                                 .font(.caption2).foregroundStyle(.secondary)
                         }
+                        .prefetchPosters(after: index, in: posters, count: 18)
                     }
                 }
                 .padding(.horizontal, Metrics.margin)
