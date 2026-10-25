@@ -51,12 +51,12 @@ swift tools/render_icons.swift tools/ororo-logo.svg Resources/Assets.xcassets
 
 ## Sharing with friends (ad hoc)
 
-`tools/adhoc/adhoc.py` registers friends' iPhones, builds an ad hoc copy signed for every registered device, and publishes an install page at https://4n.studio/ororo/ (Vercel project `4n-studio`):
+Friends install the iOS app from https://4n.studio/ororo/. The script that registers their devices, builds the ad hoc copy and publishes the page lives in `~/Developer/4n-studio` (shared with Seek):
 
 ```sh
-tools/adhoc/adhoc.py add "Their name" <udid>
-tools/adhoc/adhoc.py build
-tools/adhoc/adhoc.py deploy
+~/Developer/4n-studio/adhoc.py add "Their name" <udid>
+~/Developer/4n-studio/adhoc.py build ororo
+~/Developer/4n-studio/adhoc.py deploy
 ```
 
-Friends open the page in Safari on their iPhone. A build only installs on devices registered when it was made, so rebuild and redeploy after adding someone.
+A build only installs on devices registered when it was made, so rebuild and redeploy after adding someone.
