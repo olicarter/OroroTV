@@ -1,10 +1,11 @@
 # OroroTV
 
-A native tvOS and iPadOS client for [ororo.tv](https://ororo.tv), built with SwiftUI.
+A native tvOS, iPadOS and iOS client for [ororo.tv](https://ororo.tv), built with SwiftUI.
 
 Both apps share one codebase (`Sources/`). Where the platforms differ, the iPad uses its own native components: a tab bar that can become a sidebar, toolbar menus for sorting and genres, pop-up/segmented season pickers, pointer hover effects, and Picture in Picture. Sizes for each platform live in `Sources/Platform.swift`.
 
 - Browse shows and movies (popular, new episodes, top rated), with sorting and a genre filter
+- AirPlay to an Apple TV from iPhone or iPad, subtitles included: while AirPlay is the route, `Sources/PlaylistServer.swift` serves the subtitled playlists over HTTP on the phone's Wi-Fi address (the Apple TV can't use the private-scheme stream), and the player swaps to that copy at the same position
 - Search the whole catalog (native tvOS keyboard; the system search tab on iPad)
 - Show pages with seasons and episodes, plus "continue watching" and resume
 - AVKit player with ororo's external WebVTT subtitles. On tvOS they're drawn over the video with a Subtitles menu in the transport bar. On iPad the app adds them to the HLS stream as real subtitle renditions (`Sources/SubtitledStream.swift`), so AVKit's own full-screen player lists them in its subtitles menu and draws them, Picture in Picture included
@@ -20,7 +21,7 @@ xcodegen generate
 open OroroTV.xcodeproj
 ```
 
-Schemes: `OroroTV` (Apple TV, tvOS 17+) and `OroroPad` (iPad, iPadOS 18+). They share the bundle ID `dev.olicarter.ororotv`, so the commands below work for either simulator.
+Schemes: `OroroTV` (Apple TV, tvOS 17+) and `OroroiOS` (iPhone and iPad, iOS 18+). They share the bundle ID `dev.olicarter.ororotv`, so the commands below work for either simulator.
 
 Set your signing team in `project.yml` (`DEVELOPMENT_TEAM`) before regenerating, or Xcode will lose it.
 
@@ -47,3 +48,15 @@ The tvOS icon layers and top shelf images, and the iPad icon, are rendered from 
 ```sh
 swift tools/render_icons.swift tools/ororo-logo.svg Resources/Assets.xcassets
 ```
+
+## Sharing with friends (ad hoc)
+
+`tools/adhoc/adhoc.py` registers friends' iPhones, builds an ad hoc copy signed for every registered device, and publishes an install page at https://4n.studio/ororo/ (Vercel project `4n-studio`):
+
+```sh
+tools/adhoc/adhoc.py add "Their name" <udid>
+tools/adhoc/adhoc.py build
+tools/adhoc/adhoc.py deploy
+```
+
+Friends open the page in Safari on their iPhone. A build only installs on devices registered when it was made, so rebuild and redeploy after adding someone.

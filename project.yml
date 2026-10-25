@@ -28,27 +28,29 @@ targets:
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: MPCJ63V5P5
         ASSETCATALOG_COMPILER_APPICON_NAME: "App Icon & Top Shelf Image"
-  OroroPad:
+  OroroiOS:
     type: application
     platform: iOS
     sources: [Sources, Resources]
     info:
-      path: iPad/Info.plist
+      path: iOS/Info.plist
       properties:
         CFBundleURLTypes:
           - CFBundleURLName: dev.olicarter.ororotv
             CFBundleURLSchemes: [ororotv]
         UIBackgroundModes: [audio]
+        NSLocalNetworkUsageDescription: Ororo sends the video and its subtitles to your Apple TV when you use AirPlay.
     settings:
       base:
         PRODUCT_NAME: Ororo
         PRODUCT_BUNDLE_IDENTIFIER: dev.olicarter.ororotv
-        TARGETED_DEVICE_FAMILY: "2"
+        TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Ororo
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIUserInterfaceStyle: Dark
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"

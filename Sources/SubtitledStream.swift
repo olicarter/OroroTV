@@ -8,6 +8,9 @@ import AVFoundation
 /// is a one-segment playlist whose segment is the language's VTT file on ororo.tv (AVFoundation
 /// only loads media segments over HTTP). Variant and audio playlists are made absolute and load
 /// directly.
+///
+/// An Apple TV can't use the private scheme, so for AirPlay `PlaylistServer` serves the same
+/// playlists over HTTP (`playlist(at:base:)`).
 final class SubtitledStream: NSObject, AVAssetResourceLoaderDelegate {
     private static let scheme = "ororo-hls"
     private static let subtitlesHost = "subtitles"
@@ -49,12 +52,18 @@ final class SubtitledStream: NSObject, AVAssetResourceLoaderDelegate {
     }
 
     private func response(for url: URL) async throws -> (Data, String) {
-        guard url.host == Self.subtitlesHost else {
-            return (Data(try await rewrittenMaster().utf8), "public.m3u-playlist")
+        let path = url.host == Self.subtitlesHost ? "subtitles" + url.path : "master.m3u8"
+        return (Data(try await playlist(at: path, base: "\(Self.scheme)://").utf8), "public.m3u-playlist")
+    }
+
+    /// `master.m3u8` or `subtitles/<index>.m3u8`; the master's subtitle renditions are `base` + that path.
+    func playlist(at path: String, base: String) async throws -> String {
+        if path == "master.m3u8" { return try await rewrittenMaster(base: base) }
+        let name = (path as NSString).deletingPathExtension
+        guard name.hasPrefix("subtitles/"), let index = Int(name.dropFirst(10)), subtitles.indices.contains(index) else {
+            throw URLError(.fileDoesNotExist)
         }
-        let name = url.deletingPathExtension().lastPathComponent
-        guard let index = Int(name), subtitles.indices.contains(index) else { throw URLError(.fileDoesNotExist) }
-        return (Data(try await subtitlePlaylist(index).utf8), "public.m3u-playlist")
+        return try await subtitlePlaylist(index)
     }
 
     private func fetchText(_ url: URL) async throws -> String {
@@ -64,7 +73,7 @@ final class SubtitledStream: NSObject, AVAssetResourceLoaderDelegate {
         return String(decoding: data, as: UTF8.self)
     }
 
-    private func rewrittenMaster() async throws -> String {
+    private func rewrittenMaster(base: String) async throws -> String {
         let text = try await fetchText(master)
         let absolute = { (uri: String) in URL(string: uri, relativeTo: self.master)?.absoluteString ?? uri }
         var names = Set<String>()
@@ -72,7 +81,7 @@ final class SubtitledStream: NSObject, AVAssetResourceLoaderDelegate {
             var name = Languages.name(sub.lang)
             while !names.insert(name).inserted { name += " (\(index + 1))" }
             return "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"\(Self.groupID)\",LANGUAGE=\"\(sub.lang)\",NAME=\"\(name)\","
-                + "AUTOSELECT=YES,DEFAULT=NO,URI=\"\(Self.scheme)://\(Self.subtitlesHost)/\(index).m3u8\""
+                + "AUTOSELECT=YES,DEFAULT=NO,URI=\"\(base)\(Self.subtitlesHost)/\(index).m3u8\""
         }
 
         var out: [String] = []

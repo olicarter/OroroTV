@@ -55,7 +55,16 @@ final class PlayerController: NSObject, ObservableObject {
     #if !os(tvOS)
     /// Serves the stream with ororo's subtitles added; must outlive the player item.
     private var stream: SubtitledStream?
+    /// The same playlists over HTTP, for an Apple TV playing over AirPlay.
+    private var server: PlaylistServer?
+    private var airPlayURL: URL?
+    private var directURL: URL?
+    private var playingAirPlayItem = false
+    private var itemMetadata: [AVMetadataItem] = []
     private var selectionObserver: NSObjectProtocol?
+    private var routeObserver: NSObjectProtocol?
+    private var externalObservation: NSKeyValueObservation?
+    private var failureObservation: NSKeyValueObservation?
     #endif
     private var timeObserver: Any?
     private var lastSaved: Double = 0
@@ -76,12 +85,16 @@ final class PlayerController: NSObject, ObservableObject {
             subtitles = (playable.subtitles ?? []).sorted { $0.lang < $1.lang }
             #if os(tvOS)
             let item = AVPlayerItem(url: url)
-            #else
-            let stream = SubtitledStream(url: url, subtitles: subtitles)
-            self.stream = stream
-            let item = AVPlayerItem(asset: stream.asset)
-            #endif
             item.externalMetadata = metadata(playable)
+            #else
+            stream = SubtitledStream(url: url, subtitles: subtitles)
+            directURL = url
+            server = stream.flatMap(PlaylistServer.init)
+            airPlayURL = await server?.start()
+            itemMetadata = metadata(playable)
+            playingAirPlayItem = isAirPlaying
+            let item = makeItem()
+            #endif
             player.replaceCurrentItem(with: item)
             if let resume = model?.savedPosition(for: request.progressKey) {
                 await player.seek(to: CMTime(seconds: resume, preferredTimescale: 600))
@@ -99,6 +112,7 @@ final class PlayerController: NSObject, ObservableObject {
             }
             #else
             await selectMedia(subtitles: preferred, in: item)
+            observeRoute()
             #endif
         } catch {
             self.error = error.localizedDescription
@@ -120,6 +134,61 @@ final class PlayerController: NSObject, ObservableObject {
     }
 
     #if !os(tvOS)
+    /// AirPlay video, or AirPlay audio about to become it.
+    private var isAirPlaying: Bool {
+        player.isExternalPlaybackActive
+            || AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .airPlay }
+    }
+
+    /// The private-scheme stream on this device. Over AirPlay the Apple TV loads the stream
+    /// itself and can't use that scheme, so it gets the HTTP copy (or, failing that, ororo's
+    /// own playlist without subtitles).
+    private func makeItem() -> AVPlayerItem {
+        failureObservation = nil
+        let item = playingAirPlayItem
+            ? AVPlayerItem(url: airPlayURL ?? directURL!)
+            : AVPlayerItem(asset: stream!.asset)
+        item.externalMetadata = itemMetadata
+        if playingAirPlayItem, airPlayURL != nil {
+            failureObservation = item.observe(\.status) { [weak self] item, _ in
+                guard item.status == .failed else { return }
+                Task { @MainActor in
+                    guard let self, self.player.currentItem === item else { return }
+                    self.airPlayURL = nil
+                    await self.replaceItem()
+                }
+            }
+        }
+        return item
+    }
+
+    private func observeRoute() {
+        externalObservation = player.observe(\.isExternalPlaybackActive) { [weak self] _, _ in
+            Task { @MainActor in await self?.routeChanged() }
+        }
+        routeObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in await self?.routeChanged() }
+        }
+    }
+
+    private func routeChanged() async {
+        guard stream != nil, isAirPlaying != playingAirPlayItem else { return }
+        playingAirPlayItem = isAirPlaying
+        await replaceItem()
+    }
+
+    /// Swaps in the item for the current route, carrying over the position and subtitles.
+    private func replaceItem() async {
+        let time = player.currentTime()
+        let item = makeItem()
+        player.replaceCurrentItem(with: item)
+        await player.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+        player.play()
+        await selectMedia(subtitles: model?.subtitleLanguage ?? "en", in: item)
+    }
+
     /// Makes sure an audio track is playing, picks the saved language in AVKit's subtitles menu,
     /// then remembers whatever the viewer chooses there as the new default.
     private func selectMedia(subtitles language: String, in item: AVPlayerItem) async {
@@ -132,6 +201,7 @@ final class PlayerController: NSObject, ObservableObject {
         guard let group = try? await item.asset.loadMediaSelectionGroup(for: .legible) else { return }
         let option = group.options.first { $0.extendedLanguageTag == language }
         item.select(language == "off" ? nil : option, in: group)
+        if let selectionObserver { NotificationCenter.default.removeObserver(selectionObserver) }
         selectionObserver = NotificationCenter.default.addObserver(
             forName: AVPlayerItem.mediaSelectionDidChangeNotification, object: item, queue: .main
         ) { [weak self] _ in
@@ -147,7 +217,12 @@ final class PlayerController: NSObject, ObservableObject {
         saveProgress()
         #if !os(tvOS)
         if let selectionObserver { NotificationCenter.default.removeObserver(selectionObserver) }
+        if let routeObserver { NotificationCenter.default.removeObserver(routeObserver) }
         selectionObserver = nil
+        routeObserver = nil
+        externalObservation = nil
+        failureObservation = nil
+        server = nil
         stream = nil
         #endif
         if let timeObserver { player.removeTimeObserver(timeObserver) }
