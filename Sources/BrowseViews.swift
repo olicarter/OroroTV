@@ -17,6 +17,8 @@ struct PosterCard: View {
         }
         .cardButtonStyle()
         .accessibilityLabel(item.name)
+        // Ready for the detail page before it's opened.
+        .onAppear { ImageCache.shared.prefetchData([item.heroURL]) }
     }
 }
 

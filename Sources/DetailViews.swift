@@ -2,18 +2,29 @@ import SwiftUI
 
 /// Fills whatever space it's given. The image sits in an overlay so its aspect ratio can't
 /// widen the layout: backdrops are 16:9, which only matches the screen on tvOS.
+///
+/// Tiles prefetch their backdrop's bytes, so it usually only needs decoding here; either way it
+/// fades in rather than popping.
 struct Backdrop: View {
     let url: URL?
+    @State private var loaded: UIImage?
+
     var body: some View {
+        let image = loaded ?? url.flatMap(ImageCache.shared.cached)
         Color.black
             .overlay {
-                AsyncImage(url: url) { image in
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color.black
+                if let image {
+                    Image(uiImage: image).resizable().aspectRatio(contentMode: .fill)
+                        .transition(.opacity)
                 }
             }
             .clipped()
+            .task(id: url) {
+                loaded = nil
+                guard let url, ImageCache.shared.cached(url) == nil else { return }
+                let image = await ImageCache.shared.image(for: url, kind: .backdrop)
+                withAnimation(.easeIn(duration: 0.35)) { loaded = image }
+            }
             .overlay(LinearGradient(colors: [.black.opacity(0.35), .black.opacity(0.85), .black],
                                     startPoint: .top, endPoint: .bottom))
             .ignoresSafeArea()
@@ -76,7 +87,7 @@ struct MovieDetailView: View {
         }
         .padding(Metrics.detailMargin)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-        .background { Backdrop(url: item.backdropURL ?? item.posterURL) }
+        .background { Backdrop(url: item.heroURL) }
         .detailToolbar()
     }
 }
@@ -126,7 +137,7 @@ struct ShowDetailView: View {
 
     var body: some View {
         ZStack {
-            Backdrop(url: item.backdropURL ?? item.posterURL)
+            Backdrop(url: item.heroURL)
             ScrollView {
                 VStack(alignment: .leading, spacing: 40) {
                     header

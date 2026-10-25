@@ -33,6 +33,8 @@ struct CatalogItem: Codable, Identifiable, Hashable {
 
     var posterURL: URL? { posterThumb.flatMap(URL.init(string:)) }
     var backdropURL: URL? { backdropUrl.flatMap(URL.init(string:)) }
+    /// The detail page's background.
+    var heroURL: URL? { backdropURL ?? posterURL }
     var genres: [String] { arrayGenres ?? [] }
     var sortDate: Int { newestVideo ?? updatedAt ?? 0 }
 }
