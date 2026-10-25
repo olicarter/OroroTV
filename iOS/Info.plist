@@ -28,7 +28,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Ororo sends the video and its subtitles to your Apple TV when you use AirPlay.</string>
 	<key>UIBackgroundModes</key>
