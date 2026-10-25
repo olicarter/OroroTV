@@ -12,6 +12,8 @@ targets:
     info:
       path: Info.plist
       properties:
+        # The ad hoc tool stamps each build with its own number, so iOS updates in place.
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleURLTypes:
           - CFBundleURLName: dev.olicarter.ororotv
             CFBundleURLSchemes: [ororotv]
@@ -35,6 +37,8 @@ targets:
     info:
       path: iOS/Info.plist
       properties:
+        # The ad hoc tool stamps each build with its own number, so iOS updates in place.
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleURLTypes:
           - CFBundleURLName: dev.olicarter.ororotv
             CFBundleURLSchemes: [ororotv]

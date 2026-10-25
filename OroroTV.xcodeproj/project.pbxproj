@@ -21,10 +21,12 @@
 		4D32B36D97E5A56F4C65C464 /* OroroAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71A8C65AE2F31D192B0AB622 /* OroroAPI.swift */; };
 		566F4972565CEEB0283328A7 /* DetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AA38AC0974828304F59CF5 /* DetailViews.swift */; };
 		69765C81B6C585E44C87E5A2 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D450B4585CC0A384AEB6D45E /* AppModel.swift */; };
+		6F8FEC1FADA1E18A7DAD9104 /* AppUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1EB0132F87E2BCB819EA2A9 /* AppUpdater.swift */; };
 		80F553D72F058333A919378D /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27521DCCA75FBE2D71B0C608 /* Platform.swift */; };
 		85A3C031225DCE9C48286E65 /* BrowseViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C848B7BA3AE94D6F7212F6 /* BrowseViews.swift */; };
 		AD93FE862CEE11E4DB38BE29 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DD29E03C9A9B23F8D528A41A /* Assets.xcassets */; };
 		B0255750C69482CC09814C8F /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92A56E71C9328A37DE45FBD /* LoginView.swift */; };
+		C0C700B9AEBE3E58EBC6C3FE /* AppUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1EB0132F87E2BCB819EA2A9 /* AppUpdater.swift */; };
 		CB23EA48F76DF15FCB4E7067 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27521DCCA75FBE2D71B0C608 /* Platform.swift */; };
 		CB8735C29B4820EC8426A48C /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D450B4585CC0A384AEB6D45E /* AppModel.swift */; };
 		D06BD29ED812A12A12614707 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C8936FD7CBBBE946FAB34B2 /* ImageCache.swift */; };
@@ -45,6 +47,7 @@
 		4C8936FD7CBBBE946FAB34B2 /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		71A8C65AE2F31D192B0AB622 /* OroroAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OroroAPI.swift; sourceTree = "<group>"; };
 		A3AA38AC0974828304F59CF5 /* DetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews.swift; sourceTree = "<group>"; };
+		C1EB0132F87E2BCB819EA2A9 /* AppUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdater.swift; sourceTree = "<group>"; };
 		D450B4585CC0A384AEB6D45E /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		D92A56E71C9328A37DE45FBD /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		DA620173139C3C1593E6B662 /* OroroiOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OroroiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +78,7 @@
 			isa = PBXGroup;
 			children = (
 				D450B4585CC0A384AEB6D45E /* AppModel.swift */,
+				C1EB0132F87E2BCB819EA2A9 /* AppUpdater.swift */,
 				35C848B7BA3AE94D6F7212F6 /* BrowseViews.swift */,
 				A3AA38AC0974828304F59CF5 /* DetailViews.swift */,
 				4C8936FD7CBBBE946FAB34B2 /* ImageCache.swift */,
@@ -202,6 +206,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB8735C29B4820EC8426A48C /* AppModel.swift in Sources */,
+				6F8FEC1FADA1E18A7DAD9104 /* AppUpdater.swift in Sources */,
 				FAF8460E45630748EF569720 /* BrowseViews.swift in Sources */,
 				566F4972565CEEB0283328A7 /* DetailViews.swift in Sources */,
 				D06BD29ED812A12A12614707 /* ImageCache.swift in Sources */,
@@ -221,6 +226,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				69765C81B6C585E44C87E5A2 /* AppModel.swift in Sources */,
+				C0C700B9AEBE3E58EBC6C3FE /* AppUpdater.swift in Sources */,
 				85A3C031225DCE9C48286E65 /* BrowseViews.swift in Sources */,
 				DD081240101ABB6D46206BE5 /* DetailViews.swift in Sources */,
 				148BB442960BA03C9D85A7C2 /* ImageCache.swift in Sources */,

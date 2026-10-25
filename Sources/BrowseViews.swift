@@ -328,6 +328,15 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            #if os(iOS)
+            if AppUpdater.shared.availableBuild != nil {
+                Section {
+                    Button("Update Ororo", systemImage: "arrow.down.app") { AppUpdater.shared.install() }
+                } footer: {
+                    Text("A new version is on 4n.studio. Ororo closes while it installs.")
+                }
+            }
+            #endif
             Section("Playback") {
                 Picker("Default subtitles", selection: $model.subtitleLanguage) {
                     Text("Off").tag("off")

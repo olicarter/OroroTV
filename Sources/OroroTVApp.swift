@@ -23,6 +23,9 @@ struct OroroTVApp: App {
             }
             .environmentObject(model)
             .preferredColorScheme(.dark)
+            #if os(iOS)
+            .appUpdatePrompt()
+            #endif
         }
     }
 }
