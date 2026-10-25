@@ -3,14 +3,14 @@ import SwiftUI
 /// Fills whatever space it's given. The image sits in an overlay so its aspect ratio can't
 /// widen the layout: backdrops are 16:9, which only matches the screen on tvOS.
 ///
-/// Tiles prefetch their backdrop's bytes, so it usually only needs decoding here; either way it
-/// fades in rather than popping.
+/// Tiles prefetch and decode their backdrop, so it's usually there on the first frame; one that
+/// wasn't ready fades in rather than popping.
 struct Backdrop: View {
     let url: URL?
     @State private var loaded: UIImage?
 
     var body: some View {
-        let image = loaded ?? url.flatMap(ImageCache.shared.cached)
+        let image = loaded ?? url.flatMap(ImageCache.shared.hero)
         Color.black
             .overlay {
                 if let image {
@@ -21,8 +21,8 @@ struct Backdrop: View {
             .clipped()
             .task(id: url) {
                 loaded = nil
-                guard let url, ImageCache.shared.cached(url) == nil else { return }
-                let image = await ImageCache.shared.image(for: url, kind: .backdrop)
+                guard let url, ImageCache.shared.hero(url) == nil else { return }
+                let image = await ImageCache.shared.loadHero(url)
                 withAnimation(.easeIn(duration: 0.35)) { loaded = image }
             }
             .overlay(LinearGradient(colors: [.black.opacity(0.35), .black.opacity(0.85), .black],
